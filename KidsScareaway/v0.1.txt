@@ -1,0 +1,41 @@
+
+int SL1 = 4;
+int buzzerPin = 8;                          BUZZER INPUT PIN.
+int ledPin = 13;                            LED PIN.
+int pirPin = A0;                            MOTION SENSOR INPUT PIN.
+int sensorValue = LOW;                      DEFAULT SENSOR STATE.
+int SL1Value = LOW; 
+
+
+void setup() {                              INITIAL SETTINGSASSIGNMETN.
+  pinMode(buzzerPin, OUTPUT);               SET BUZZER AS OUTPUT.
+  pinMode(ledPin, OUTPUT);                  SET LED AS OUTPUT.
+  pinMode(pirPin, INPUT);                   SET PIR AS INPUT.
+  pinMode(SL1, INPUT_PULLUP);
+}
+void loop() {                               COMMAND TO BE REPEATED.
+  sensorValue = digitalRead(pirPin);        READ PIR INPUT PIN.
+  SL1Value = digitalRead(SL1);
+  if ( sensorValue == HIGH && SL1Value==0) {             IF MOTION IS DETECTED.
+    tone(buzzerPin, 1200);                  BUZZ THE BUZZER.
+    digitalWrite(ledPin, HIGH);             ON LED.
+    delay(50);                             TIME DIFFERENCE BETWEEN HIGH(ON)& LOW(OFF).
+    noTone(buzzerPin);                      SILENT BUZZER.
+    tone(buzzerPin, 2400);
+    digitalWrite(ledPin, LOW);              OFF LED.
+    delay(50);                             TIME DIFFERENCE BETWEEN HIGH(ON)& LOW(OFF).
+  }
+  else if (sensorValue == HIGH && SL1Value==1) {             IF MOTION IS DETECTED.
+    tone(buzzerPin, 500);                  BUZZ THE BUZZER.
+    digitalWrite(ledPin, HIGH);             ON LED.
+    delay(50);                             TIME DIFFERENCE BETWEEN HIGH(ON)& LOW(OFF).
+    noTone(buzzerPin);                      SILENT BUZZER.
+    tone(buzzerPin, 2400);
+    digitalWrite(ledPin, LOW);              OFF LED.
+    delay(100);                             TIME DIFFERENCE BETWEEN HIGH(ON)& LOW(OFF).
+  }
+  else {                                    IF NO MOTION IS DETECTED.
+    noTone(buzzerPin);                      SILENT THE BUZZER.
+    digitalWrite(ledPin, LOW);              OFF LED.
+  }
+}

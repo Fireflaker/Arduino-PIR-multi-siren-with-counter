@@ -1,0 +1,280 @@
+// ---------------------------------------------------------------------------
+// Connect your piezo buzzer (without internal oscillator) or speaker to these pins:
+//   Pins  9 & 10 - ATmega328, ATmega128, ATmega640, ATmega8, Uno, Leonardo, etc.
+//   Pins 11 & 12 - ATmega2560/2561, ATmega1280/1281, Mega
+//   Pins 12 & 13 - ATmega1284P, ATmega644
+//   Pins 14 & 15 - Teensy 2.0
+//   Pins 25 & 26 - Teensy++ 2.0
+// Be sure to include an inline 100 ohm resistor on one pin as you normally do when connecting a piezo or speaker.
+// ---------------------------------------------------------------------------
+#include <toneAC.h>
+
+//// Melody liberated from the toneMelody Arduino example sketch by Tom Igoe.
+//int melody[] = { 262, 196, 196, 220, 196, 0, 247, 262 };
+//int noteDurations[] = { 40, 80, 80, 40, 40, 40, 40, 40 };
+
+const byte blinkyPin = 6;           // the number of the LED pin
+bool startPulse = false;    // ensures leds dont blink while pulse is active
+
+int ledState = LOW;             // ledState used to set blinkyPin
+
+
+int SL1 = 4;
+int SL2 = 5;
+int buzzerPin = 9;                          //BUZZER INPUT PIN.
+int ledPin = 13;                            //LED PIN.
+int pirPin = A0;                            //MOTION SENSOR INPUT PIN.
+int sensorValue = LOW;                      //DEFAULT SENSOR STATE.
+int SL1Value = LOW;
+int SL2Value = LOW;
+
+int trigcount = 0;
+
+int valA = 0;
+int valB = 0;
+int valC = 0;
+int valD = 0;
+int valE = 0;
+
+int trigger = 0;
+
+bool doneFlag = false;
+
+int numberOfFlashes = 0;
+
+unsigned long previousMillis = 0;        // will store last time LED was updated
+
+// constants won't change:
+const long interval = 1000;           // interval at which to blink (milliseconds)
+
+void setup() {                              //INITIAL SETTINGS/ASSIGNMETN.
+  pinMode(buzzerPin, OUTPUT);               //SET BUZZER AS OUTPUT.
+  pinMode(ledPin, OUTPUT);                  //SET LED AS OUTPUT.
+  pinMode(pirPin, INPUT);                   //SET PIR AS INPUT.
+  pinMode(SL1, INPUT_PULLUP);
+  pinMode(SL2, INPUT_PULLUP);
+  pinMode(blinkyPin, OUTPUT);
+
+  // initialize serial communication at 9600 bits per second:
+  Serial.begin(1200); // WARNING THIS IS REALLY 9600
+
+  pinMode(A1, INPUT_PULLUP);
+  pinMode(A2, INPUT_PULLUP);
+  pinMode(A3, INPUT_PULLUP);
+  pinMode(A4, INPUT);
+  pinMode(A5, INPUT);
+
+  Serial.println("Created by Allen on Oct/18/2019. Uploded with MiniCore tool.");
+  Serial.println("It uses 1Mhz internal OSC. Somehow everything runs at 8x the expected speed.");
+  Serial.println("Use Serial.begin(1200); for 9600 baud");
+  Serial.println("A1&2&3 are input-pullup and A5&6 are input");
+}
+void loop() {                               //COMMAND TO BE REPEATED.
+  valA = analogRead(A1);
+  valB = analogRead(A2);
+  valC = analogRead(A3);
+  valD = analogRead(A4);
+  valE = analogRead(A5);
+  sensorValue = digitalRead(pirPin);
+
+  Serial.print("A1: ");
+  Serial.print(valA);
+  Serial.print(" A2: ");
+  Serial.print(valB);
+  Serial.print(" A3: ");
+  Serial.print(valC);
+  Serial.print(" A4: ");
+  Serial.print(valD);
+  Serial.print(" A5: ");
+  Serial.print(valE);
+  Serial.print(" PIR: ");
+  Serial.print(sensorValue);
+  Serial.print(" SL1Value: ");
+  Serial.print(SL1Value);
+  Serial.print(" SL2Value: ");
+  Serial.print(SL2Value);
+  Serial.print(" Triggered: ");
+  Serial.println(trigcount);
+
+
+  SL1Value = digitalRead(SL1);
+  SL2Value = digitalRead(SL2);
+
+
+  if ( sensorValue == HIGH && SL1Value == 0 && SL2Value == 0) {           //Sweep up tested okay
+
+    Serial.println("Sweep up");
+    digitalWrite(ledPin, HIGH);             //ON LED.
+    for (unsigned long freq = 25; freq <= 160; freq += 1) {
+      toneAC(freq); // Play the frequency (25*8 Hz to 165*8 Hz sweep in 10 Hz steps).
+      delay(80);     // Wait 1 ms so you can hear it.
+    }
+    toneAC(); // Turn off toneAC, can also use noToneAC().
+    digitalWrite(ledPin, LOW);              //OFF LED.
+    doneFlag = false;
+  }
+
+
+
+
+
+
+
+  else if (sensorValue == HIGH && SL1Value == 1 && SL2Value == 0) {           //low beep beep tested okay
+
+    Serial.println("Low beep beep");
+
+    for (int thisNote = 0; thisNote < 8; thisNote++) {
+      digitalWrite(ledPin, HIGH);             //ON LED.
+      toneAC(35);
+      delay(5000);
+      toneAC( 0);
+      delay(3000);
+      digitalWrite(ledPin, LOW);              //OFF LED.
+      delay(10);                             //TIME DIFFERENCE BETWEEN HIGH(ON)& LOW(OFF).
+    }
+    doneFlag = false;
+  }
+
+
+
+
+
+
+
+
+
+
+  else if (sensorValue == HIGH && SL1Value == 0 && SL2Value == 1) {           //Sweep up down tested okay
+
+
+    Serial.println("Sweep up down");
+
+    digitalWrite(ledPin, HIGH);             //ON LED.
+
+    for (unsigned long freq = 20; freq < 100; freq++) {
+      toneAC(freq);
+      delay(5);
+    }
+    toneAC();
+
+    // Whoop down
+    for (unsigned long freq = 100; freq > 20; freq--) {
+      toneAC(freq);
+      delay(5);
+    }
+    toneAC();
+
+
+
+    digitalWrite(ledPin, LOW);              //OFF LED.
+    doneFlag = false;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+  else if (sensorValue == HIGH && SL1Value == 1 && SL2Value == 1) {           //Mad Tone
+
+    Serial.println("Mad Tone");
+
+    digitalWrite(ledPin, HIGH);             //ON LED.
+    toneAC(45);
+    delay(500);
+
+    toneAC(100);
+    delay(300);
+
+    toneAC(65);
+    delay(500);
+
+    toneAC(200);
+    delay(300);
+
+    digitalWrite(ledPin, LOW);              //OFF LED.
+    delay(1);                             //TIME DIFFERENCE BETWEEN HIGH(ON)& LOW(OFF).
+    doneFlag = false;
+  }
+
+
+
+
+
+
+  else  if (sensorValue == LOW) {                                   //IF NO MOTION IS DETECTED.
+
+    toneAC(); // shut up
+    digitalWrite(ledPin, LOW);              //OFF LED.
+
+    if (doneFlag == false)
+    {
+      trigcount++;
+      doneFlag = true;
+    }
+
+  }
+
+  numberOfFlashes = trigcount;
+  ledSequence(blinkyPin);
+
+}
+
+
+
+void ledSequence(byte ledPin) {
+  const long interval = 1000; // time between flashes in ms.
+  static bool ledState = false;
+  static byte sequencePosition = 0;
+  static unsigned long previousMillis = 0;
+  unsigned long currentMillis = millis();
+  if ((currentMillis - previousMillis >= interval) && !startPulse) {
+    if (sequencePosition < numberOfFlashes * 2) { // blink
+      Serial.print("ledState = "); Serial.println(ledState);
+      digitalWrite(ledPin, ledState);
+      ledState = !ledState;
+      sequencePosition++;
+    }
+    else if (sequencePosition == numberOfFlashes * 2) { // pulse
+      Serial.println("Starting pulse");
+      startPulse = true;
+      sequencePosition = 0;
+      ledState = false;
+    }
+    previousMillis = currentMillis;
+  }
+  pulse(ledPin);
+}
+
+void pulse(byte ledPin) {
+  static bool incrementUp = true;
+  static byte increment = 0;
+  static unsigned long previousMillis = 0;
+  unsigned long currentMillis = millis();
+  const long interval = 2; // 2 = 2 * 255 * 2 = 1020ms pulse time.
+  if ((currentMillis - previousMillis >= interval) && startPulse) {
+    if (incrementUp && increment < 80) {
+      increment++;
+    }
+    else if (increment == 80) {
+      incrementUp = false;
+    }
+    if (!incrementUp && increment > 0) {
+      increment--;
+    }
+    else if (increment == 0) {
+      incrementUp = true;
+      startPulse = false;
+    }
+    Serial.print("Pulse PWM = "); Serial.println(increment);
+    analogWrite(ledPin, increment);
+    previousMillis = currentMillis;
+  }
+}
