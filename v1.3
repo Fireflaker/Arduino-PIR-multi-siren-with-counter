@@ -91,7 +91,7 @@ void loop() {                               //COMMAND TO BE REPEATED.
   Serial.print(valD);
   Serial.print(" A5: ");
   Serial.print(valE);
-  
+
   Serial.print(" PIR: ");
   Serial.print(sensorValue);
   Serial.print(" SL1Value: ");
@@ -113,7 +113,7 @@ void loop() {                               //COMMAND TO BE REPEATED.
     other_sensor_shutdown = true;
   }
   else
-   {
+  {
     other_sensor_shutdown = false;
   }
 
@@ -242,7 +242,7 @@ void loop() {                               //COMMAND TO BE REPEATED.
 
   }
 
-  numberOfFlashes = trigcount;
+  numberOfFlashes = trigcount - 1; // so it starts from zero!
   ledSequence(blinkyPin);
 
 }
